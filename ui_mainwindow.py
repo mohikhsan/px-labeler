@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.1
+# Created by: PyQt5 UI code generator 5.6
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(922, 571)
+        MainWindow.resize(918, 571)
         self.main_display = QtWidgets.QLabel(MainWindow)
         self.main_display.setGeometry(QtCore.QRect(10, 10, 640, 480))
         self.main_display.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -86,21 +86,6 @@ class Ui_MainWindow(object):
         font.setPointSize(8)
         self.btn_load_sequence.setFont(font)
         self.btn_load_sequence.setObjectName("btn_load_sequence")
-        self.frame_tree = QtWidgets.QFrame(MainWindow)
-        self.frame_tree.setGeometry(QtCore.QRect(659, 99, 251, 461))
-        self.frame_tree.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_tree.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.frame_tree.setObjectName("frame_tree")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.frame_tree)
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.table_filename = QtWidgets.QTreeWidget(self.frame_tree)
-        self.table_filename.setAutoScroll(True)
-        self.table_filename.setUniformRowHeights(True)
-        self.table_filename.setObjectName("table_filename")
-        self.table_filename.header().setDefaultSectionSize(140)
-        self.table_filename.header().setMinimumSectionSize(30)
-        self.verticalLayout_2.addWidget(self.table_filename)
         self.frame_clear = QtWidgets.QFrame(MainWindow)
         self.frame_clear.setGeometry(QtCore.QRect(540, 500, 111, 61))
         self.frame_clear.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -159,6 +144,24 @@ class Ui_MainWindow(object):
         self.btn_edit_label.setMaximumSize(QtCore.QSize(40, 40))
         self.btn_edit_label.setObjectName("btn_edit_label")
         self.horizontalLayout_4.addWidget(self.btn_edit_label)
+        self.table_filename = QtWidgets.QTableWidget(MainWindow)
+        self.table_filename.setGeometry(QtCore.QRect(660, 100, 250, 460))
+        self.table_filename.setObjectName("table_filename")
+        self.table_filename.setColumnCount(2)
+        self.table_filename.setRowCount(0)
+        item = QtWidgets.QTableWidgetItem()
+        self.table_filename.setHorizontalHeaderItem(0, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.table_filename.setHorizontalHeaderItem(1, item)
+        self.table_filename.horizontalHeader().setDefaultSectionSize(160)
+        self.table_filename.horizontalHeader().setStretchLastSection(True)
+        self.main_display.raise_()
+        self.frame_vid_con.raise_()
+        self.frame_folder.raise_()
+        self.frame_clear.raise_()
+        self.frame_label.raise_()
+        self.table_filename.raise_()
+        self.table_filename.raise_()
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -173,10 +176,12 @@ class Ui_MainWindow(object):
         self.label_dir_title.setText(_translate("MainWindow", "Current Directory"))
         self.label_dir_name.setText(_translate("MainWindow", "..."))
         self.btn_load_sequence.setText(_translate("MainWindow", "Load"))
-        self.table_filename.headerItem().setText(0, _translate("MainWindow", "Filename"))
-        self.table_filename.headerItem().setText(1, _translate("MainWindow", "Label"))
         self.btn_copy_labels.setText(_translate("MainWindow", "Copy"))
         self.btn_clear_labels.setText(_translate("MainWindow", "Clear"))
         self.label_color.setText(_translate("MainWindow", "Color"))
         self.btn_edit_label.setText(_translate("MainWindow", "Edit"))
+        item = self.table_filename.horizontalHeaderItem(0)
+        item.setText(_translate("MainWindow", "Filename"))
+        item = self.table_filename.horizontalHeaderItem(1)
+        item.setText(_translate("MainWindow", "Labeled"))
 
