@@ -40,7 +40,7 @@
     <rect>
      <x>270</x>
      <y>500</y>
-     <width>251</width>
+     <width>231</width>
      <height>61</height>
     </rect>
    </property>
@@ -199,6 +199,9 @@
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
        </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
     </layout>
@@ -225,9 +228,9 @@
   <widget class="QFrame" name="frame_clear">
    <property name="geometry">
     <rect>
-     <x>540</x>
+     <x>510</x>
      <y>500</y>
-     <width>111</width>
+     <width>141</width>
      <height>61</height>
     </rect>
    </property>
@@ -258,17 +261,23 @@
      </widget>
     </item>
     <item>
-     <spacer name="spacer_clear">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+     <widget class="QPushButton" name="btn_save_labels">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-      <property name="sizeHint" stdset="0">
+      <property name="maximumSize">
        <size>
         <width>40</width>
-        <height>20</height>
+        <height>40</height>
        </size>
       </property>
-     </spacer>
+      <property name="text">
+       <string>Save</string>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QPushButton" name="btn_clear_labels">
@@ -308,7 +317,7 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_4">
     <item>
-     <widget class="QLabel" name="label_color">
+     <widget class="QLabel" name="label_pxmarker_color">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
         <horstretch>0</horstretch>
@@ -321,6 +330,9 @@
         <height>22</height>
        </size>
       </property>
+      <property name="autoFillBackground">
+       <bool>true</bool>
+      </property>
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
       </property>
@@ -328,7 +340,7 @@
        <enum>QFrame::Sunken</enum>
       </property>
       <property name="text">
-       <string>Color</string>
+       <string/>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -336,10 +348,10 @@
      </widget>
     </item>
     <item>
-     <widget class="QComboBox" name="cbox_select_label"/>
+     <widget class="QComboBox" name="cbox_pxmarker_select"/>
     </item>
     <item>
-     <widget class="QPushButton" name="btn_edit_label">
+     <widget class="QPushButton" name="btn_edit_pxmarker">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
         <horstretch>0</horstretch>

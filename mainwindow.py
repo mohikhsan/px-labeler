@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QApplication, QFileDialog, QTableWidget, QTableWidgetItem
 from PyQt5.QtGui import QImage, QPixmap
 from ui_mainwindow import Ui_MainWindow
+from pxmarkerdialog import PxMarkerDialog
 
 from os import listdir, makedirs
 from os.path import isfile, join, basename, exists, splitext
@@ -30,15 +31,27 @@ class MainWindow(QWidget):
 
         self.pxlabel_filename = None
         self.pxlabel_mat = None
+        self.pxlabel_frame = None
 
         self.table_db = None
         self.table_height = None
+
+        self.pxmarker_table = self.load_pxmarker_table()
+        self.update_pxmarker_cbox(self.pxmarker_table)
+        self.ui.cbox_pxmarker_select.setCurrentIndex(0)
+        self.pxmarker_current = self.pxmarker_table[0]
+        self.pxmarker_stylesheet = self.get_pxmarker_stylesheet(self.pxmarker_current[1])
+        self.ui.label_pxmarker_color.setStyleSheet(self.pxmarker_stylesheet)
 
         # Signals & Slots
         self.ui.btn_load_sequence.clicked.connect(self.on_load_img_dir)
         self.ui.btn_frame_next.clicked.connect(self.on_next_frame_click)
         self.ui.btn_frame_prev.clicked.connect(self.on_prev_frame_click)
+        self.ui.btn_edit_pxmarker.clicked.connect(self.on_pxmarker_edit_click)
         self.ui.table_filename.itemSelectionChanged.connect(self.on_table_selection_change)
+        self.ui.cbox_pxmarker_select.currentIndexChanged.connect(self.on_pxmarker_cbox_change)
+
+
 
     def on_load_img_dir(self):
         """Callback for load directory button
@@ -81,6 +94,57 @@ class MainWindow(QWidget):
 
         self.ui.table_filename.selectRow(current_row)
 
+    def on_pxmarker_cbox_change(self, index):
+        self.pxmarker_current = self.pxmarker_table[index]
+        self.pxmarker_stylesheet = self.get_pxmarker_stylesheet(self.pxmarker_current[1])
+        self.ui.label_pxmarker_color.setStyleSheet(self.pxmarker_stylesheet)
+
+    def on_pxmarker_edit_click(self):
+        pxmarker_dialog = PxMarkerDialog(self,self.pxmarker_table)
+
+        if pxmarker_dialog.exec():
+            print(self.pxmarker_table)
+            print(pxmarker_dialog.pxmarker_table_out)
+        else:
+            pass
+
+        pxmarker_dialog = None
+
+
+    def load_pxmarker_table(self):
+        try:
+            with open('px_marker.pkl', 'rb') as f:
+                pxmarker_table = pickle.load(f)
+                return pxmarker_table
+        except EnvironmentError as e:
+            pxmarker_table = [
+                                [0, (0,0,0), 'Eraser'],
+                                [1, (255,0,0), 'Feature 1'],
+                                [2, (0,255,0), 'Feature 2'],
+                                [3, (0,0,255), 'Feature 3'],
+                                [4, (255,255,0), 'Feature 4'],
+                                [5, (0,255,255), 'Feature 5'],
+                                [6, (255,0,255), 'Feature 6'],
+                                [7, (128,128,0), 'Feature 7'],
+                                [8, (0,128,128), 'Feature 8'],
+                                [9, (128,0,128), 'Feature 9'],
+                                [10, (255,153,153), 'Feature 10']
+            ]
+
+            with open('px_marker.pkl', 'wb') as f:
+                pickle.dump(pxmarker_table, f)
+                return pxmarker_table
+
+    def get_pxmarker_stylesheet(self, color):
+        return "background-color: rgb" + str(color) + ";"
+
+    def update_pxmarker_cbox(self, pxmarker_table):
+        cbox_list = []
+        for item in pxmarker_table:
+            cbox_list.append(item[2])
+
+        self.ui.cbox_pxmarker_select.clear()
+        self.ui.cbox_pxmarker_select.addItems(cbox_list)
 
     def load_img_table(self, img_file_dir):
         """Create table of image files and pxlabel files
