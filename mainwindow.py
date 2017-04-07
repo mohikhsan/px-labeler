@@ -1,5 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QApplication, QFileDialog, QTableWidget, QTableWidgetItem
 from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtCore import QEvent, Qt
+
 from ui_mainwindow import Ui_MainWindow
 from pxmarkerdialog import PxMarkerDialog
 
@@ -23,25 +25,39 @@ class MainWindow(QWidget):
         # Class variables
         self.file_formats = ('.jpg','.png','.bmp','.gif')
 
-        self.img_size = (480,640)
+        # Image variables
+        self.img_size = None
         self.img_directory = None
         self.img_table_idx = None
         self.img_filename = None
-        self.img_frame = None
 
+        # cv2 images of us image, label, and display
+        self.img_frame = None
+        self.pxlabel_frame = None
+        self.display_frame = None
+
+        # Label variables
         self.pxlabel_filename = None
         self.pxlabel_mat = None
-        self.pxlabel_frame = None
 
+        # Cursor variables
+        self.cursor_size = 5
+        self.cursor_color = None
+
+        # Image database array & variables
         self.table_db = None
         self.table_height = None
+        self.table_loaded = False
 
+        # Marker table & variables
         self.pxmarker_table = self.load_pxmarker_table()
         self.update_pxmarker_cbox(self.pxmarker_table)
         self.ui.cbox_pxmarker_select.setCurrentIndex(0)
         self.pxmarker_current = self.pxmarker_table[0]
         self.pxmarker_stylesheet = self.get_pxmarker_stylesheet(self.pxmarker_current[1])
         self.ui.label_pxmarker_color.setStyleSheet(self.pxmarker_stylesheet)
+
+        self.cursor_color = self.pxmarker_current[1]
 
         # Signals & Slots
         self.ui.btn_load_sequence.clicked.connect(self.on_load_img_dir)
@@ -51,7 +67,23 @@ class MainWindow(QWidget):
         self.ui.table_filename.itemSelectionChanged.connect(self.on_table_selection_change)
         self.ui.cbox_pxmarker_select.currentIndexChanged.connect(self.on_pxmarker_cbox_change)
 
+        # Main frame event filter
+        self.ui.main_display.setMouseTracking(True)
+        self.ui.main_display.installEventFilter(self)
 
+    def eventFilter(self, source, event):
+        if event.type() == QEvent.MouseMove and self.table_loaded:
+            if event.buttons() == Qt.NoButton:
+                #Paint only cursor and size
+                pos = event.pos()
+                self.update_display(pos, True)
+            else:
+                print("Button Pressed")
+
+        elif event.type() == QEvent.Leave and self.table_loaded:
+            self.update_display()
+
+        return QWidget.eventFilter(self, source, event)
 
     def on_load_img_dir(self):
         """Callback for load directory button
@@ -60,7 +92,7 @@ class MainWindow(QWidget):
         self.img_directory = QFileDialog.getExistingDirectory(self, "Select Image Directory", options = QFileDialog.ShowDirsOnly)
 
         if not self.img_directory == '':
-            self.load_img_table(self.img_directory)
+            self.table_loaded = self.load_img_table(self.img_directory)
             self.ui.table_filename.selectRow(0)
 
     def on_table_selection_change(self):
@@ -72,32 +104,35 @@ class MainWindow(QWidget):
         self.img_table_idx = self.ui.table_filename.currentRow()
         self.img_filename = self.ui.table_filename.item(self.img_table_idx, 0).text()
 
-        self.pxlabel_filename = self.img_directory + '/labels/' + splitext(self.img_filename)[0] + '.pkl'
-        self.load_pxlabel_mat(self.pxlabel_filename)
-
         self.load_img_frame(self.img_directory + '/' + self.img_filename)
         self.ui.label_frame_num.setText(str(self.img_table_idx+1) + '/' +str(self.table_height))
 
-    def on_next_frame_click(self):
-        if self.img_table_idx < self.table_height - 1:
-            current_row = self.img_table_idx + 1
-        else:
-            current_row = 0
+        self.pxlabel_filename = self.img_directory + '/labels/' + splitext(self.img_filename)[0] + '.pkl'
+        self.pxlabel_mat = self.load_pxlabel_mat(self.pxlabel_filename)
+        self.pxlabel_frame = self.pxlabel2frame(self.img_size, self.pxlabel_mat, self.pxmarker_table)
 
-        self.ui.table_filename.selectRow(current_row)
+    def on_next_frame_click(self):
+        if self.table_loaded:
+            if self.img_table_idx < self.table_height - 1:
+                current_row = self.img_table_idx + 1
+            else:
+                current_row = 0
+            self.ui.table_filename.selectRow(current_row)
 
     def on_prev_frame_click(self):
-        if self.img_table_idx > 0:
-            current_row = self.img_table_idx - 1
-        else:
-            current_row = self.table_height - 1
+        if self.table_loaded:
+            if self.img_table_idx > 0:
+                current_row = self.img_table_idx - 1
+            else:
+                current_row = self.table_height - 1
 
-        self.ui.table_filename.selectRow(current_row)
+            self.ui.table_filename.selectRow(current_row)
 
     def on_pxmarker_cbox_change(self, index):
         self.pxmarker_current = self.pxmarker_table[index]
         self.pxmarker_stylesheet = self.get_pxmarker_stylesheet(self.pxmarker_current[1])
         self.ui.label_pxmarker_color.setStyleSheet(self.pxmarker_stylesheet)
+        self.cursor_color = self.pxmarker_current[1]
 
     def on_pxmarker_edit_click(self):
         pxmarker_dialog = PxMarkerDialog(self,self.pxmarker_table)
@@ -110,6 +145,12 @@ class MainWindow(QWidget):
 
         pxmarker_dialog = None
 
+    def update_display(self, mouse_pos=None, cursor_flag=False):
+        self.display_frame = self.img_frame.copy()
+        self.display_frame = cv2.addWeighted(self.display_frame, 1, self.pxlabel_frame, 0.5, 0)
+        if cursor_flag:
+            cv2.circle(self.display_frame, (mouse_pos.x(), mouse_pos.y()), self.cursor_size, self.cursor_color[::-1], 3)
+        self.ui.main_display.setPixmap(QPixmap.fromImage(self.cv2qimage(self.display_frame)))
 
     def load_pxmarker_table(self):
         try:
@@ -183,15 +224,17 @@ class MainWindow(QWidget):
             self.ui.table_filename.setItem(row_position, 1, QTableWidgetItem(str(pxlabel_status)))
             row_position += 1
 
+        return True
+
     def load_pxlabel_mat(self, pxlabel_filename):
         """Load pxlabel matrix if available, create one if not
 
         """
         try:
             with open(pxlabel_filename, 'rb') as f:
-                self.pxlabel_mat = pickle.load(f)
+                return pickle.load(f)
         except EnvironmentError as e:
-            self.pxlabel_mat = np.zeros(self.img_size)
+            return np.zeros(self.img_size[:2])
 
     def save_pxlabel_mat(self):
         """Write pxlabel pickle file and update table_height
@@ -201,11 +244,20 @@ class MainWindow(QWidget):
             pickle.dump(self.pxlabel_mat, f)
             print("Pxlabel pickled")
 
+    def pxlabel2frame(self, img_size, pxlabel_mat, pxmarker_table):
+        pxlabel_frame_out = np.zeros(img_size, np.uint8)
+        for marker in pxmarker_table:
+            pxlabel_frame_out[pxlabel_mat == marker[0]] = marker[1]
+
+        return pxlabel_frame_out
+
+
     def load_img_frame(self, img_filename):
         """Load image frame from image file
 
         """
         self.img_frame = cv2.imread(img_filename)
+        self.img_size = self.img_frame.shape
         self.ui.main_display.setPixmap(QPixmap.fromImage(self.cv2qimage(self.img_frame)))
 
     def cv2qimage(self,cv2_img):
