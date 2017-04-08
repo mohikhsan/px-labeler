@@ -39,6 +39,7 @@ class MainWindow(QWidget):
         # Label variables
         self.pxlabel_filename = None
         self.pxlabel_mat = None
+        self.pxlabel_mat_ori = None
 
         # Cursor variables
         self.cursor_size = 5
@@ -64,6 +65,8 @@ class MainWindow(QWidget):
         self.ui.btn_frame_next.clicked.connect(self.on_next_frame_click)
         self.ui.btn_frame_prev.clicked.connect(self.on_prev_frame_click)
         self.ui.btn_edit_pxmarker.clicked.connect(self.on_pxmarker_edit_click)
+        self.ui.btn_save_labels.clicked.connect(self.save_pxlabel_mat)
+
         self.ui.table_filename.itemSelectionChanged.connect(self.on_table_selection_change)
         self.ui.cbox_pxmarker_select.currentIndexChanged.connect(self.on_pxmarker_cbox_change)
 
@@ -73,12 +76,13 @@ class MainWindow(QWidget):
 
     def eventFilter(self, source, event):
         if event.type() == QEvent.MouseMove and self.table_loaded:
+            pos = event.pos()
             if event.buttons() == Qt.NoButton:
                 #Paint only cursor and size
-                pos = event.pos()
                 self.update_display(pos, True)
             else:
-                print("Button Pressed")
+                cv2.circle(self.pxlabel_frame, (pos.x(), pos.y()), self.cursor_size, self.cursor_color[::-1], -1)
+                self.update_display(pos, False)
 
         elif event.type() == QEvent.Leave and self.table_loaded:
             self.update_display()
@@ -109,7 +113,10 @@ class MainWindow(QWidget):
 
         self.pxlabel_filename = self.img_directory + '/labels/' + splitext(self.img_filename)[0] + '.pkl'
         self.pxlabel_mat = self.load_pxlabel_mat(self.pxlabel_filename)
+        self.pxlabel_mat_ori = self.pxlabel_mat.copy()
         self.pxlabel_frame = self.pxlabel2frame(self.img_size, self.pxlabel_mat, self.pxmarker_table)
+
+        self.update_display()
 
     def on_next_frame_click(self):
         if self.table_loaded:
@@ -176,6 +183,11 @@ class MainWindow(QWidget):
                 pickle.dump(pxmarker_table, f)
                 return pxmarker_table
 
+    def save_pxmarker_table(self):
+        with open('px_marker.pkl', 'wb') as f:
+            pickle.dump(self.pxmarker_table, f)
+            print("Pxmarker pickled")
+
     def get_pxmarker_stylesheet(self, color):
         return "background-color: rgb" + str(color) + ";"
 
@@ -232,6 +244,7 @@ class MainWindow(QWidget):
         """
         try:
             with open(pxlabel_filename, 'rb') as f:
+                print('Loaded label from file')
                 return pickle.load(f)
         except EnvironmentError as e:
             return np.zeros(self.img_size[:2])
@@ -240,9 +253,19 @@ class MainWindow(QWidget):
         """Write pxlabel pickle file and update table_height
 
         """
-        with open(pxlabel_filename, 'wb') as f:
-            pickle.dump(self.pxlabel_mat, f)
-            print("Pxlabel pickled")
+        #transform frame to mat
+        if self.pxlabel_filename:
+            self.pxlabel_mat = self.update_pxlabel_mat(self.pxlabel_mat, self.pxlabel_frame, self.pxmarker_table)
+
+            with open(self.pxlabel_filename, 'wb') as f:
+                pickle.dump(self.pxlabel_mat, f)
+                print("Pxlabel pickled")
+
+    def update_pxlabel_mat(self, pxlabel_mat, pxlabel_frame, pxmarker_table):
+        pxlabel_mat_out = pxlabel_mat.copy()
+        for marker in pxmarker_table:
+            pxlabel_mat_out[np.where((pxlabel_frame == marker[1]).all(axis=2))[:2]] = marker[0]
+        return pxlabel_mat_out
 
     def pxlabel2frame(self, img_size, pxlabel_mat, pxmarker_table):
         pxlabel_frame_out = np.zeros(img_size, np.uint8)
