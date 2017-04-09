@@ -35,11 +35,12 @@ class MainWindow(QWidget):
         self.img_frame = None
         self.pxlabel_frame = None
         self.display_frame = None
+        self.mouse_pos = None
 
         # Label variables
         self.pxlabel_filename = None
         self.pxlabel_mat = None
-        self.pxlabel_mat_ori = None
+        self.pxlabel_frame_ori = None
 
         # Cursor variables
         self.cursor_size = 5
@@ -65,7 +66,6 @@ class MainWindow(QWidget):
         self.ui.btn_frame_next.clicked.connect(self.on_next_frame_click)
         self.ui.btn_frame_prev.clicked.connect(self.on_prev_frame_click)
         self.ui.btn_edit_pxmarker.clicked.connect(self.on_pxmarker_edit_click)
-        self.ui.btn_save_labels.clicked.connect(self.save_pxlabel_mat)
 
         self.ui.table_filename.itemSelectionChanged.connect(self.on_table_selection_change)
         self.ui.cbox_pxmarker_select.currentIndexChanged.connect(self.on_pxmarker_cbox_change)
@@ -83,13 +83,13 @@ class MainWindow(QWidget):
 
         """
         if event.type() == QEvent.MouseMove and self.table_loaded:
-            pos = event.pos()
+            self.mouse_pos = event.pos()
             if event.buttons() == Qt.NoButton:
                 #Paint only cursor and size
-                self.update_display(pos, True)
+                self.update_display(self.mouse_pos, True)
             else:
-                cv2.circle(self.pxlabel_frame, (pos.x(), pos.y()), self.cursor_size, self.cursor_color[::-1], -1)
-                self.update_display(pos, False)
+                cv2.circle(self.pxlabel_frame, (self.mouse_pos.x(), self.mouse_pos.y()), self.cursor_size, self.cursor_color[::-1], -1)
+                self.update_display(self.mouse_pos, False)
 
         elif event.type() == QEvent.Leave and self.table_loaded:
             self.update_display()
@@ -152,7 +152,7 @@ class MainWindow(QWidget):
         self.img_directory = QFileDialog.getExistingDirectory(self, "Select Image Directory", options = QFileDialog.ShowDirsOnly)
 
         if not self.img_directory == '':
-            self.table_loaded = self.load_img_table(self.img_directory)
+            self.load_img_table(self.img_directory)
             self.ui.table_filename.selectRow(0)
 
     def load_img_table(self, img_file_dir):
@@ -192,14 +192,15 @@ class MainWindow(QWidget):
             self.ui.table_filename.setItem(row_position, 1, QTableWidgetItem(str(pxlabel_status)))
             row_position += 1
 
-        return True
-
     def on_table_selection_change(self):
         """Callback for table selection change.
 
         Updates image index, filename, frame, and frame label.
 
         """
+        if self.table_loaded:
+            self.save_pxlabel_mat()
+
         self.img_table_idx = self.ui.table_filename.currentRow()
         self.img_filename = self.ui.table_filename.item(self.img_table_idx, 0).text()
 
@@ -208,10 +209,13 @@ class MainWindow(QWidget):
 
         self.pxlabel_filename = self.img_directory + '/labels/' + splitext(self.img_filename)[0] + '.pkl'
         self.pxlabel_mat = self.load_pxlabel_mat(self.pxlabel_filename)
-        self.pxlabel_mat_ori = self.pxlabel_mat.copy()
         self.pxlabel_frame = self.pxlabel2frame(self.img_size, self.pxlabel_mat, self.pxmarker_table)
+        self.pxlabel_frame_ori = self.pxlabel_frame.copy()
+
+        self.table_loaded = True
 
         self.update_display()
+
 
     def on_next_frame_click(self):
         """Callback for next button click
@@ -250,6 +254,9 @@ class MainWindow(QWidget):
         self.pxmarker_stylesheet = self.get_pxmarker_stylesheet(self.pxmarker_current[1])
         self.ui.label_pxmarker_color.setStyleSheet(self.pxmarker_stylesheet)
         self.cursor_color = self.pxmarker_current[1]
+
+        if self.mouse_pos:
+            self.update_display(self.mouse_pos, True)
 
     def on_pxmarker_edit_click(self):
         """Callback for marker edit button click. Launches edit marker dialog.
@@ -336,8 +343,7 @@ class MainWindow(QWidget):
         """Write pxlabel pickle file and update table_height
 
         """
-        #transform frame to mat
-        if self.pxlabel_filename:
+        if self.pxlabel_frame.any() and not (self.pxlabel_frame == self.pxlabel_frame_ori).all():
             self.pxlabel_mat = self.update_pxlabel_mat(self.pxlabel_mat, self.pxlabel_frame, self.pxmarker_table)
 
             item = QTableWidgetItem(str(True))
@@ -356,10 +362,33 @@ class MainWindow(QWidget):
             pxlabel_mat_out[np.where((pxlabel_frame == marker[1]).all(axis=2))[:2]] = marker[0]
         return pxlabel_mat_out
 
+    #########################
+    # Keyboard Events
+    #########################
+    def keyReleaseEvent(self,event):
+        key = event.key()
+        if key == Qt.Key_W:
+            if self.cursor_size < 20:
+                self.cursor_size += 1
+                if self.table_loaded:
+                    self.update_display(self.mouse_pos, True)
+        if key == Qt.Key_S:
+            if self.cursor_size > 5:
+                self.cursor_size -= 1
+                if self.table_loaded:
+                    self.update_display(self.mouse_pos, True)
+        if key == Qt.Key_A:
+            self.on_prev_frame_click()
+        if key == Qt.Key_D:
+            self.on_next_frame_click()
+        if key == Qt.Key_E:
+            self.ui.cbox_pxmarker_select.setCurrentIndex(0)
+
 
 if __name__ == "__main__":
     import sys
     app = QApplication(sys.argv)
     LabelerMainWindow = MainWindow()
+    LabelerMainWindow.setFocusPolicy(Qt.StrongFocus)
     LabelerMainWindow.show()
     sys.exit(app.exec_())

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>918</width>
-    <height>571</height>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,7 +38,7 @@
   <widget class="QFrame" name="frame_vid_con">
    <property name="geometry">
     <rect>
-     <x>270</x>
+     <x>280</x>
      <y>500</y>
      <width>231</width>
      <height>61</height>
@@ -228,9 +228,9 @@
   <widget class="QFrame" name="frame_clear">
    <property name="geometry">
     <rect>
-     <x>510</x>
+     <x>530</x>
      <y>500</y>
-     <width>141</width>
+     <width>121</width>
      <height>61</height>
     </rect>
    </property>
@@ -261,23 +261,17 @@
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="btn_save_labels">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
-      <property name="maximumSize">
+      <property name="sizeHint" stdset="0">
        <size>
         <width>40</width>
-        <height>40</height>
+        <height>20</height>
        </size>
       </property>
-      <property name="text">
-       <string>Save</string>
-      </property>
-     </widget>
+     </spacer>
     </item>
     <item>
      <widget class="QPushButton" name="btn_clear_labels">
@@ -405,6 +399,25 @@
      <string>Labeled</string>
     </property>
    </column>
+  </widget>
+  <widget class="QLabel" name="label_status">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>570</y>
+     <width>901</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Sunken</enum>
+   </property>
+   <property name="text">
+    <string>No directory selected</string>
+   </property>
   </widget>
  </widget>
  <resources/>

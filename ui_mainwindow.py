@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.8.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(918, 571)
+        MainWindow.resize(918, 600)
         self.main_display = QtWidgets.QLabel(MainWindow)
         self.main_display.setGeometry(QtCore.QRect(10, 10, 640, 480))
         self.main_display.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -19,7 +19,7 @@ class Ui_MainWindow(object):
         self.main_display.setAlignment(QtCore.Qt.AlignCenter)
         self.main_display.setObjectName("main_display")
         self.frame_vid_con = QtWidgets.QFrame(MainWindow)
-        self.frame_vid_con.setGeometry(QtCore.QRect(270, 500, 231, 61))
+        self.frame_vid_con.setGeometry(QtCore.QRect(280, 500, 231, 61))
         self.frame_vid_con.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_vid_con.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.frame_vid_con.setObjectName("frame_vid_con")
@@ -88,7 +88,7 @@ class Ui_MainWindow(object):
         self.btn_load_sequence.setFont(font)
         self.btn_load_sequence.setObjectName("btn_load_sequence")
         self.frame_clear = QtWidgets.QFrame(MainWindow)
-        self.frame_clear.setGeometry(QtCore.QRect(510, 500, 141, 61))
+        self.frame_clear.setGeometry(QtCore.QRect(530, 500, 121, 61))
         self.frame_clear.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_clear.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.frame_clear.setObjectName("frame_clear")
@@ -103,15 +103,8 @@ class Ui_MainWindow(object):
         self.btn_copy_labels.setMaximumSize(QtCore.QSize(40, 40))
         self.btn_copy_labels.setObjectName("btn_copy_labels")
         self.horizontalLayout_3.addWidget(self.btn_copy_labels)
-        self.btn_save_labels = QtWidgets.QPushButton(self.frame_clear)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.btn_save_labels.sizePolicy().hasHeightForWidth())
-        self.btn_save_labels.setSizePolicy(sizePolicy)
-        self.btn_save_labels.setMaximumSize(QtCore.QSize(40, 40))
-        self.btn_save_labels.setObjectName("btn_save_labels")
-        self.horizontalLayout_3.addWidget(self.btn_save_labels)
+        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_3.addItem(spacerItem2)
         self.btn_clear_labels = QtWidgets.QPushButton(self.frame_clear)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -168,6 +161,11 @@ class Ui_MainWindow(object):
         self.table_filename.setHorizontalHeaderItem(1, item)
         self.table_filename.horizontalHeader().setDefaultSectionSize(120)
         self.table_filename.horizontalHeader().setStretchLastSection(True)
+        self.label_status = QtWidgets.QLabel(MainWindow)
+        self.label_status.setGeometry(QtCore.QRect(10, 570, 901, 21))
+        self.label_status.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.label_status.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.label_status.setObjectName("label_status")
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -183,11 +181,11 @@ class Ui_MainWindow(object):
         self.label_dir_name.setText(_translate("MainWindow", "..."))
         self.btn_load_sequence.setText(_translate("MainWindow", "Load"))
         self.btn_copy_labels.setText(_translate("MainWindow", "Copy"))
-        self.btn_save_labels.setText(_translate("MainWindow", "Save"))
         self.btn_clear_labels.setText(_translate("MainWindow", "Clear"))
         self.btn_edit_pxmarker.setText(_translate("MainWindow", "Edit"))
         item = self.table_filename.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "Filename"))
         item = self.table_filename.horizontalHeaderItem(1)
         item.setText(_translate("MainWindow", "Labeled"))
+        self.label_status.setText(_translate("MainWindow", "No directory selected"))
 
