@@ -10,11 +10,19 @@ class PxMarkerDialog(QDialog):
         self.ui = Ui_PxMarkerDialog()
         self.ui.setupUi(self)
 
-        self.pxmarker_table_out = pxmarker_table
+        self.pxmarker_table_out = pxmarker_table.copy()
         self.pxmarker_table_height = len(self.pxmarker_table_out)
+
+        self.ui.pxmarker_table_widget.itemSelectionChanged.connect(self.on_pxmarker_table_selection_change)
+        self.ui.btn_confirm_box.accepted.connect(self.on_pxmarker_table_selection_change)
+
         self.load_pxmarker_table()
+        self.ui.pxmarker_table_widget.selectRow(0)
 
     def load_pxmarker_table(self):
+        """Load pixel marker table
+
+        """
         self.ui.pxmarker_table_widget.clearContents()
         self.ui.pxmarker_table_widget.setRowCount(self.pxmarker_table_height)
 
@@ -36,3 +44,13 @@ class PxMarkerDialog(QDialog):
             self.ui.pxmarker_table_widget.setItem(row_position, 2, feature_item)
 
             row_position += 1
+
+    def on_pxmarker_table_selection_change(self):
+        """Update changes made by user in table widget to the table array
+
+        """
+        row_idx = 0
+        for row in self.pxmarker_table_out:
+            item = self.ui.pxmarker_table_widget.item(row_idx, 2)
+            row[2] = item.text()
+            row_idx+=1

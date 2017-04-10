@@ -5,7 +5,7 @@ from PyQt5.QtCore import QEvent, Qt
 from ui_mainwindow import Ui_MainWindow
 from pxmarkerdialog import PxMarkerDialog
 
-from os import listdir, makedirs
+from os import listdir, makedirs, remove
 from os.path import isfile, join, basename, exists, splitext
 from glob import glob
 
@@ -34,13 +34,14 @@ class MainWindow(QWidget):
         # cv2 images of us image, label, and display
         self.img_frame = None
         self.pxlabel_frame = None
+        self.pxlabel_frame_ori = None
+        self.pxlabel_frame_prev = None
         self.display_frame = None
         self.mouse_pos = None
 
         # Label variables
         self.pxlabel_filename = None
         self.pxlabel_mat = None
-        self.pxlabel_frame_ori = None
 
         # Cursor variables
         self.cursor_size = 5
@@ -66,6 +67,8 @@ class MainWindow(QWidget):
         self.ui.btn_frame_next.clicked.connect(self.on_next_frame_click)
         self.ui.btn_frame_prev.clicked.connect(self.on_prev_frame_click)
         self.ui.btn_edit_pxmarker.clicked.connect(self.on_pxmarker_edit_click)
+        self.ui.btn_copy_labels.clicked.connect(self.on_copy_click)
+        self.ui.btn_clear_labels.clicked.connect(self.on_clear_click)
 
         self.ui.table_filename.itemSelectionChanged.connect(self.on_table_selection_change)
         self.ui.cbox_pxmarker_select.currentIndexChanged.connect(self.on_pxmarker_cbox_change)
@@ -199,6 +202,7 @@ class MainWindow(QWidget):
 
         """
         if self.table_loaded:
+            self.pxlabel_frame_prev = self.pxlabel_frame.copy()
             self.save_pxlabel_mat()
 
         self.img_table_idx = self.ui.table_filename.currentRow()
@@ -241,6 +245,21 @@ class MainWindow(QWidget):
 
             self.ui.table_filename.selectRow(current_row)
 
+    def on_clear_click(self):
+        """Callback for clear button click
+
+        """
+        if self.table_loaded:
+            self.pxlabel_frame = np.zeros(self.img_size, np.uint8)
+            self.update_display()
+
+    def on_copy_click(self):
+        """Callback for copy button click
+
+        """
+        if self.table_loaded and self.pxlabel_frame_prev is not None:
+            self.pxlabel_frame = self.pxlabel_frame_prev.copy()
+            self.update_display()
     #########################
     # Drawing marker functions
     #########################
@@ -264,9 +283,11 @@ class MainWindow(QWidget):
         """
         pxmarker_dialog = PxMarkerDialog(self,self.pxmarker_table)
 
-        if pxmarker_dialog.exec():
-            print(self.pxmarker_table)
-            print(pxmarker_dialog.pxmarker_table_out)
+        if pxmarker_dialog.exec_():
+            self.pxmarker_table = pxmarker_dialog.pxmarker_table_out
+            self.update_pxmarker_cbox(self.pxmarker_table)
+
+            self.save_pxmarker_table()
         else:
             pass
 
