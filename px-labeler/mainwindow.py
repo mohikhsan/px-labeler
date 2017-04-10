@@ -5,8 +5,8 @@ from PyQt5.QtCore import QEvent, Qt
 from pxgui.ui_mainwindow import Ui_MainWindow
 from pxgui.ui_pxmarkerdialog import Ui_PxMarkerDialog
 
-from os import listdir, makedirs, remove
-from os.path import isfile, join, basename, exists, splitext
+from os import listdir, makedirs, remove, getcwd
+from os.path import isfile, join, basename, exists, splitext, realpath, dirname
 from glob import glob
 
 import pickle
@@ -24,6 +24,8 @@ class MainWindow(QWidget):
 
         # Class variables
         self.file_formats = ('.jpg','.png','.bmp','.gif')
+        self.file_abs_dir = realpath(join(getcwd(), dirname(__file__)))
+        print(self.file_abs_dir)
 
         # Image variables
         self.img_size = None
@@ -220,8 +222,6 @@ class MainWindow(QWidget):
         if self.table_loaded:
             self.pxlabel_frame_prev = self.pxlabel_frame.copy()
             self.save_pxlabel_mat()
-            statusText = "Labels for " + self.img_filename + " saved."
-            self.ui.label_status.setText(statusText)
 
         self.img_table_idx = self.ui.table_filename.currentRow()
         self.img_filename = self.ui.table_filename.item(self.img_table_idx, 0).text()
@@ -319,7 +319,7 @@ class MainWindow(QWidget):
 
         """
         try:
-            with open('settings/px_marker.pkl', 'rb') as f:
+            with open(self.file_abs_dir + '/settings/px_marker.pkl', 'rb') as f:
                 pxmarker_table = pickle.load(f)
                 return pxmarker_table
         except EnvironmentError as e:
@@ -337,7 +337,7 @@ class MainWindow(QWidget):
                                 [10, (255,153,153), 'Feature 10']
             ]
 
-            with open('settings/px_marker.pkl', 'wb') as f:
+            with open(self.file_abs_dir + '/settings/px_marker.pkl', 'wb') as f:
                 pickle.dump(pxmarker_table, f)
                 return pxmarker_table
 
@@ -345,7 +345,7 @@ class MainWindow(QWidget):
         """Save edited pixel marker to .pkl file
 
         """
-        with open('settings/px_marker.pkl', 'wb') as f:
+        with open(self.file_abs_dir + '/settings/px_marker.pkl', 'wb') as f:
             pickle.dump(self.pxmarker_table, f)
 
     def get_pxmarker_stylesheet(self, color):
@@ -402,6 +402,9 @@ class MainWindow(QWidget):
                 cv2.imwrite(self.pxlabel_display_filename, self.display_frame)
             except:
                 pass
+
+            statusText = "Labels for " + self.img_filename + " saved."
+            self.ui.label_status.setText(statusText)
 
     def update_pxlabel_mat(self, pxlabel_mat, pxlabel_frame, pxmarker_table):
         """Updates the pixel label matrix based on values in the pixel label frame
