@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QTableWidget, QTableWidgetItem
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt
-from ui_pxmarkerdialog import Ui_PxMarkerDialog
+from pxgui.ui_pxmarkerdialog import Ui_PxMarkerDialog
 
 class PxMarkerDialog(QDialog):
     def __init__(self, parent=None, pxmarker_table=None):

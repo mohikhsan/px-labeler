@@ -3,7 +3,7 @@ from PyQt5.QtGui import QImage, QPixmap, QColor
 from PyQt5.QtCore import QEvent, Qt
 
 from pxgui.ui_mainwindow import Ui_MainWindow
-from pxgui.ui_pxmarkerdialog import Ui_PxMarkerDialog
+from pxmarkerdialog import PxMarkerDialog
 
 from os import listdir, makedirs, remove, getcwd
 from os.path import isfile, join, basename, exists, splitext, realpath, dirname
@@ -439,12 +439,3 @@ class MainWindow(QWidget):
             self.on_next_frame_click()
         if key == Qt.Key_E:
             self.ui.cbox_pxmarker_select.setCurrentIndex(0)
-
-
-if __name__ == "__main__":
-    import sys
-    app = QApplication(sys.argv)
-    LabelerMainWindow = MainWindow()
-    LabelerMainWindow.setFocusPolicy(Qt.StrongFocus)
-    LabelerMainWindow.show()
-    sys.exit(app.exec_())
