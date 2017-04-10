@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Edit Pixel Markers</string>
   </property>
   <widget class="QDialogButtonBox" name="btn_confirm_box">
    <property name="geometry">

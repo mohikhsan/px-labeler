@@ -12,6 +12,9 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(918, 600)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        MainWindow.setWindowIcon(icon)
         self.main_display = QtWidgets.QLabel(MainWindow)
         self.main_display.setGeometry(QtCore.QRect(10, 10, 640, 480))
         self.main_display.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -172,7 +175,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Ultrasound Pixel Labeler"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Pixel Labeler"))
         self.main_display.setText(_translate("MainWindow", "Main Image Frame"))
         self.btn_frame_prev.setText(_translate("MainWindow", "Prev"))
         self.label_frame_num.setText(_translate("MainWindow", "0/0"))

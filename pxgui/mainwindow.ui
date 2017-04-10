@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Ultrasound Pixel Labeler</string>
+   <string>Pixel Labeler</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>icon.png</normaloff>icon.png</iconset>
   </property>
   <widget class="QLabel" name="main_display">
    <property name="geometry">

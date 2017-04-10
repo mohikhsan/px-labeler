@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QWidget, QApplication, QFileDialog, QTableWidget, QTableWidgetItem
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtGui import QImage, QPixmap, QColor
 from PyQt5.QtCore import QEvent, Qt
 
-from ui_mainwindow import Ui_MainWindow
-from pxmarkerdialog import PxMarkerDialog
+from pxgui.ui_mainwindow import Ui_MainWindow
+from pxgui.ui_pxmarkerdialog import Ui_PxMarkerDialog
 
 from os import listdir, makedirs, remove
 from os.path import isfile, join, basename, exists, splitext
@@ -41,6 +41,7 @@ class MainWindow(QWidget):
 
         # Label variables
         self.pxlabel_filename = None
+        self.pxlabel_display_filename = None
         self.pxlabel_mat = None
 
         # Cursor variables
@@ -170,6 +171,9 @@ class MainWindow(QWidget):
         if not exists(img_file_dir + '/labels'):
             makedirs(img_file_dir + '/labels')
 
+        if not exists(img_file_dir + '/labels_display'):
+            makedirs(img_file_dir + '/labels_display')
+
         pxlabels = []
         pxlabel_dir = img_file_dir + '/labels'
         pxlabel_files = [f for f in listdir(pxlabel_dir) if f.endswith('.pkl')]
@@ -191,9 +195,21 @@ class MainWindow(QWidget):
 
         row_position = 0
         for fname, pxlabel_status in self.table_db:
-            self.ui.table_filename.setItem(row_position, 0, QTableWidgetItem(fname))
-            self.ui.table_filename.setItem(row_position, 1, QTableWidgetItem(str(pxlabel_status)))
+            if pxlabel_status:
+                item_name = QTableWidgetItem(fname)
+                item_name.setForeground(QColor(0,255,0))
+
+                item_status = QTableWidgetItem(str(pxlabel_status))
+                item_status.setForeground(QColor(0,255,0))
+            else:
+                item_name = QTableWidgetItem(fname)
+                item_status = QTableWidgetItem(str(pxlabel_status))
+
+            self.ui.table_filename.setItem(row_position, 0, item_name)
+            self.ui.table_filename.setItem(row_position, 1, item_status)
             row_position += 1
+
+        self.ui.label_status.setText("Directory loaded")
 
     def on_table_selection_change(self):
         """Callback for table selection change.
@@ -204,6 +220,8 @@ class MainWindow(QWidget):
         if self.table_loaded:
             self.pxlabel_frame_prev = self.pxlabel_frame.copy()
             self.save_pxlabel_mat()
+            statusText = "Labels for " + self.img_filename + " saved."
+            self.ui.label_status.setText(statusText)
 
         self.img_table_idx = self.ui.table_filename.currentRow()
         self.img_filename = self.ui.table_filename.item(self.img_table_idx, 0).text()
@@ -212,6 +230,7 @@ class MainWindow(QWidget):
         self.ui.label_frame_num.setText(str(self.img_table_idx+1) + '/' +str(self.table_height))
 
         self.pxlabel_filename = self.img_directory + '/labels/' + splitext(self.img_filename)[0] + '.pkl'
+        self.pxlabel_display_filename = self.img_directory + '/labels_display/' + splitext(self.img_filename)[0] + '.png'
         self.pxlabel_mat = self.load_pxlabel_mat(self.pxlabel_filename)
         self.pxlabel_frame = self.pxlabel2frame(self.img_size, self.pxlabel_mat, self.pxmarker_table)
         self.pxlabel_frame_ori = self.pxlabel_frame.copy()
@@ -288,6 +307,8 @@ class MainWindow(QWidget):
             self.update_pxmarker_cbox(self.pxmarker_table)
 
             self.save_pxmarker_table()
+
+            self.ui.label_status.setText("Pixel markers saved.")
         else:
             pass
 
@@ -298,7 +319,7 @@ class MainWindow(QWidget):
 
         """
         try:
-            with open('px_marker.pkl', 'rb') as f:
+            with open('settings/px_marker.pkl', 'rb') as f:
                 pxmarker_table = pickle.load(f)
                 return pxmarker_table
         except EnvironmentError as e:
@@ -316,7 +337,7 @@ class MainWindow(QWidget):
                                 [10, (255,153,153), 'Feature 10']
             ]
 
-            with open('px_marker.pkl', 'wb') as f:
+            with open('settings/px_marker.pkl', 'wb') as f:
                 pickle.dump(pxmarker_table, f)
                 return pxmarker_table
 
@@ -324,9 +345,8 @@ class MainWindow(QWidget):
         """Save edited pixel marker to .pkl file
 
         """
-        with open('px_marker.pkl', 'wb') as f:
+        with open('settings/px_marker.pkl', 'wb') as f:
             pickle.dump(self.pxmarker_table, f)
-            print("Pxmarker pickled")
 
     def get_pxmarker_stylesheet(self, color):
         """Create stylesheet for pixel marker color indicator
@@ -355,7 +375,6 @@ class MainWindow(QWidget):
         """
         try:
             with open(pxlabel_filename, 'rb') as f:
-                print('Loaded label from file')
                 return pickle.load(f)
         except EnvironmentError as e:
             return np.zeros(self.img_size[:2])
@@ -367,12 +386,22 @@ class MainWindow(QWidget):
         if self.pxlabel_frame.any() and not (self.pxlabel_frame == self.pxlabel_frame_ori).all():
             self.pxlabel_mat = self.update_pxlabel_mat(self.pxlabel_mat, self.pxlabel_frame, self.pxmarker_table)
 
-            item = QTableWidgetItem(str(True))
-            self.ui.table_filename.setItem(self.img_table_idx,1,item)
+            item_status = QTableWidgetItem(str(True))
+            item_status.setForeground(QColor(0,255,0))
+
+            item_name = QTableWidgetItem(self.img_filename)
+            item_name.setForeground(QColor(0,255,0))
+
+            self.ui.table_filename.setItem(self.img_table_idx,1,item_status)
+            self.ui.table_filename.setItem(self.img_table_idx,0,item_name)
 
             with open(self.pxlabel_filename, 'wb') as f:
                 pickle.dump(self.pxlabel_mat, f)
-                print("Pxlabel pickled")
+
+            try:
+                cv2.imwrite(self.pxlabel_display_filename, self.display_frame)
+            except:
+                pass
 
     def update_pxlabel_mat(self, pxlabel_mat, pxlabel_frame, pxmarker_table):
         """Updates the pixel label matrix based on values in the pixel label frame
@@ -387,6 +416,9 @@ class MainWindow(QWidget):
     # Keyboard Events
     #########################
     def keyReleaseEvent(self,event):
+        """Keyboard shortcuts callback
+
+        """
         key = event.key()
         if key == Qt.Key_W:
             if self.cursor_size < 20:

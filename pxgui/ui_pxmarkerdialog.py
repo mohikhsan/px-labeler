@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pxmarkerdialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.8.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -42,7 +42,7 @@ class Ui_PxMarkerDialog(object):
 
     def retranslateUi(self, PxMarkerDialog):
         _translate = QtCore.QCoreApplication.translate
-        PxMarkerDialog.setWindowTitle(_translate("PxMarkerDialog", "Dialog"))
+        PxMarkerDialog.setWindowTitle(_translate("PxMarkerDialog", "Edit Pixel Markers"))
         item = self.pxmarker_table_widget.horizontalHeaderItem(0)
         item.setText(_translate("PxMarkerDialog", "Class"))
         item = self.pxmarker_table_widget.horizontalHeaderItem(1)
