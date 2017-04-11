@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt
 from mainwindow import MainWindow

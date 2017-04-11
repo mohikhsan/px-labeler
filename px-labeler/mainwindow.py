@@ -56,6 +56,9 @@ class MainWindow(QWidget):
         self.table_loaded = False
 
         # Marker table & variables
+        if not exists(self.file_abs_dir + '/settings'):
+            makedirs(self.file_abs_dir + '/settings')
+
         self.pxmarker_table = self.load_pxmarker_table()
         self.update_pxmarker_cbox(self.pxmarker_table)
         self.ui.cbox_pxmarker_select.setCurrentIndex(0)
