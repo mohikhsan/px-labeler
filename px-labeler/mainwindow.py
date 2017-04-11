@@ -25,8 +25,7 @@ class MainWindow(QWidget):
         # Class variables
         self.file_formats = ('.jpg','.png','.bmp','.gif')
         self.file_abs_dir = realpath(join(getcwd(), dirname(__file__)))
-        print(self.file_abs_dir)
-
+        
         # Image variables
         self.img_size = None
         self.img_directory = None
@@ -82,7 +81,6 @@ class MainWindow(QWidget):
         # Main frame event filter
         self.ui.main_display.setMouseTracking(True)
         self.ui.main_display.installEventFilter(self)
-
     #########################
     # Main Display functions
     #########################
