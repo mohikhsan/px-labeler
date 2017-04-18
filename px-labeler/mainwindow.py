@@ -25,7 +25,7 @@ class MainWindow(QWidget):
         # Class variables
         self.file_formats = ('.jpg','.png','.bmp','.gif')
         self.file_abs_dir = realpath(join(getcwd(), dirname(__file__)))
-        
+
         # Image variables
         self.img_size = None
         self.img_directory = None
@@ -118,8 +118,10 @@ class MainWindow(QWidget):
 
         """
         pxlabel_frame_out = np.zeros(img_size, np.uint8)
-        for marker in pxmarker_table:
-            pxlabel_frame_out[pxlabel_mat == marker[0]] = marker[1]
+        idx = 0
+        for marker in pxmarker_table[1:]:
+            pxlabel_frame_out[pxlabel_mat[idx] == 1] = marker[1]
+            idx += 1
 
         return pxlabel_frame_out
 
@@ -378,7 +380,10 @@ class MainWindow(QWidget):
             with open(pxlabel_filename, 'rb') as f:
                 return pickle.load(f)
         except EnvironmentError as e:
-            return np.zeros(self.img_size[:2])
+            num_labels = 10
+            num_rows = self.img_size[0]
+            num_cols = self.img_size[1]
+            return np.zeros((num_labels,num_rows,num_cols), dtype=np.uint8)
 
     def save_pxlabel_mat(self):
         """Write pxlabel pickle file and update table_height
@@ -412,8 +417,14 @@ class MainWindow(QWidget):
 
         """
         pxlabel_mat_out = pxlabel_mat.copy()
-        for marker in pxmarker_table:
-            pxlabel_mat_out[np.where((pxlabel_frame == marker[1]).all(axis=2))[:2]] = marker[0]
+        idx = 0
+        for marker in pxmarker_table[1:]:
+            marker_label = np.zeros(self.img_size[:2], dtype=np.uint8)
+            marker_label[np.where((pxlabel_frame == marker[1]).all(axis=2))[:2]] = 1
+            marker_label = np.array([marker_label])
+            pxlabel_mat_out[idx] = marker_label
+            idx += 1
+
         return pxlabel_mat_out
 
     #########################
