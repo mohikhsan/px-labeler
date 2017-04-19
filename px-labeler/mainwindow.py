@@ -32,7 +32,7 @@ class MainWindow(QWidget):
         self.img_table_idx = None
         self.img_filename = None
 
-        # cv2 images of us image, label, and display
+        # ndarray of us image, label, and display
         self.img_frame = None
         self.pxlabel_frame = None
         self.pxlabel_frame_ori = None
@@ -43,6 +43,7 @@ class MainWindow(QWidget):
         # Label variables
         self.pxlabel_filename = None
         self.pxlabel_display_filename = None
+        self.pxlabel_mask_filename = None
         self.pxlabel_mat = None
 
         # Cursor variables
@@ -96,6 +97,7 @@ class MainWindow(QWidget):
                 self.update_display(self.mouse_pos, True)
             else:
                 cv2.circle(self.pxlabel_frame, (self.mouse_pos.x(), self.mouse_pos.y()), self.cursor_size, self.cursor_color[::-1], -1)
+
                 self.update_display(self.mouse_pos, False)
 
         elif event.type() == QEvent.Leave and self.table_loaded:
@@ -109,8 +111,10 @@ class MainWindow(QWidget):
         """
         self.display_frame = self.img_frame.copy()
         self.display_frame = cv2.addWeighted(self.display_frame, 1, self.pxlabel_frame, 0.5, 0)
+
         if cursor_flag:
             cv2.circle(self.display_frame, (mouse_pos.x(), mouse_pos.y()), self.cursor_size, self.cursor_color[::-1], 3)
+
         self.ui.main_display.setPixmap(QPixmap.fromImage(self.cv2qimage(self.display_frame)))
 
     def pxlabel2frame(self, img_size, pxlabel_mat, pxmarker_table):
@@ -179,6 +183,9 @@ class MainWindow(QWidget):
         if not exists(img_file_dir + '/labels_display'):
             makedirs(img_file_dir + '/labels_display')
 
+        if not exists(img_file_dir + '/labels_mask'):
+            makedirs(img_file_dir + '/labels_mask')
+
         pxlabels = []
         pxlabel_dir = img_file_dir + '/labels'
         pxlabel_files = [f for f in listdir(pxlabel_dir) if f.endswith('.pkl')]
@@ -234,6 +241,7 @@ class MainWindow(QWidget):
 
         self.pxlabel_filename = self.img_directory + '/labels/' + splitext(self.img_filename)[0] + '.pkl'
         self.pxlabel_display_filename = self.img_directory + '/labels_display/' + splitext(self.img_filename)[0] + '.png'
+        self.pxlabel_mask_filename = self.img_directory + '/labels_mask/' + splitext(self.img_filename)[0] + '.png'
         self.pxlabel_mat = self.load_pxlabel_mat(self.pxlabel_filename)
         self.pxlabel_frame = self.pxlabel2frame(self.img_size, self.pxlabel_mat, self.pxmarker_table)
         self.pxlabel_frame_ori = self.pxlabel_frame.copy()
@@ -406,6 +414,11 @@ class MainWindow(QWidget):
 
             try:
                 cv2.imwrite(self.pxlabel_display_filename, self.display_frame)
+            except:
+                pass
+
+            try:
+                cv2.imwrite(self.pxlabel_mask_filename, self.pxlabel_frame)
             except:
                 pass
 
